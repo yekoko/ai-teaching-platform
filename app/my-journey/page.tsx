@@ -2,7 +2,7 @@
 const Profile = () => {
   return (
     <div>
-      
+      My Journey Page
     </div>
   )
 }
