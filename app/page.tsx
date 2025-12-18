@@ -11,10 +11,26 @@ export default function Home() {
         <CompanionCard
           id="23423"
           name="Neura the Brainy Explorer"
-          topic="Neura the Brainy Explorer"
+          topic="Neural Network of the Brain"
           duration={45}
           subject="science"
           color="#E5D0FF"
+        />
+        <CompanionCard
+          id="234"
+          name="Countsy the Number Wizard"
+          topic="Derivatives & Integrals"
+          duration={40}
+          subject="maths"
+          color="#FFDA6E"
+        />
+        <CompanionCard
+          id="223"
+          name="Verba the Vocabulary Builder"
+          topic="English Literature"
+          duration={50}
+          subject="language"
+          color="#BDE7FF"
         />
       </section>
       <section className="home-section">
