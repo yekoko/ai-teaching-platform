@@ -30,7 +30,7 @@ export const getAllCompanions = async ({
   if (subject && topic) {
     query = query
       .ilike("subject", `%${subject}%`)
-      .or("topic.ilike.%${topic}%, name.ilike.%${topic}%");
+      .or(`topic.ilike.%${topic}%, name.ilike.%${topic}%`);
   } else if (subject) {
     query = query.ilike("subject", `%${subject}%`);
   } else if (topic) {
