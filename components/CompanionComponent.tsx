@@ -1,5 +1,5 @@
 "use client";
-import { cn, getSubjectColor } from "@/lib/utils";
+import { cn, configureAssistant, getSubjectColor } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import Lottie, { LottieRefCurrentProps } from "lottie-react";
 import Image from "next/image";
@@ -25,6 +25,7 @@ const CompanionComponent = ({
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [messages, setMessages] = useState<SavedMessage[]>([]);
 
   const lottieRef = useRef<LottieRefCurrentProps>(null);
 
@@ -43,7 +44,12 @@ const CompanionComponent = ({
 
     const onCallEnd = () => setCallStatus(CallStatus.FINISHED);
 
-    const onMessage = () => {};
+    const onMessage = (message: Message) => {
+      if (message.type === "transcript" && message.transcriptType === "final") {
+        const newMessage = { role: message.role, content: message.transcript };
+        setMessages((prevMessages) => [newMessage, ...prevMessages]);
+      }
+    };
 
     const onSpeechStart = () => setIsSpeaking(true);
 
@@ -69,18 +75,30 @@ const CompanionComponent = ({
   }, []);
 
   const toggleMicrophone = () => {
-    // const isMuted = vapi.isMuted();
-    // vapi.setMuted(!isMuted);
+    const isMuted = vapi.isMuted();
+    vapi.setMuted(!isMuted);
     setIsMuted(!isMuted);
   };
 
-  const handleDisconnected = () => {};
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
+
+    const assistantOverrides = {
+      variableValues: { subject, topic, style },
+      clientMessages: ["transcript"],
+    };
+
+    // @ts-expect-error -- Vapi types are incomplete
+    vapi.start(configureAssistant(voice, style), assistantOverrides);
+  };
+
+  const handleDisconnected = () => {
+    setCallStatus(CallStatus.FINISHED);
+    vapi.stop();
   };
 
   return (
-    <section className="flex flex-col h-[70vh] ">
+    <section className="flex flex-col h-[75vh] ">
       <section className="flex gap-8 max-sm:flex-col">
         <div className="companion-section">
           <div
@@ -134,7 +152,11 @@ const CompanionComponent = ({
             />
             <p className="font-bold text-2xl">{userName}</p>
           </div>
-          <button className="btn-mic" onClick={toggleMicrophone}>
+          <button
+            className="btn-mic"
+            onClick={toggleMicrophone}
+            disabled={callStatus !== CallStatus.ACTIVE}
+          >
             <Image
               src={isMuted ? "/icons/mic-off.svg" : "/icons/mic-on.svg"}
               alt="mic"
@@ -164,7 +186,24 @@ const CompanionComponent = ({
         </div>
       </section>
       <section className="transcript">
-        <div className="transcript-message no-scrollbar">Messages</div>
+        <div className="transcript-message no-scrollbar">
+          {messages.map((message, index) => {
+            if (message.role === "assistant") {
+              return (
+                <p key={index} className="max-sm:text-sm">
+                  {name.split(" ")[0].replace("/[.,]/g, ", "")}:{" "}
+                  {message.content}
+                </p>
+              );
+            } else {
+              return (
+                <p key={index} className="text-primary max-sm:text-sm">
+                  {userName}: {message.content}
+                </p>
+              );
+            }
+          })}
+        </div>
         <div className="transcript-fade"></div>
       </section>
     </section>
