@@ -86,8 +86,7 @@ export const getRecentSession = async (limit = 10) => {
   return data?.map(({ companions }) => companions);
 };
 
-export const getUserSession = async (limit = 10) => {
-  const { userId } = await auth();
+export const getUserSession = async (userId: string) => {
   const supabase = createSupabaseClient();
 
   const { data, error } = await supabase
@@ -95,9 +94,21 @@ export const getUserSession = async (limit = 10) => {
     .select("companions:companion_id (*)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
-    .limit(limit);
 
   if (error) throw new Error(error.message);
 
   return data?.map(({ companions }) => companions);
+};
+
+export const getUserCompanions = async (userId: string) => {
+  const supabase = createSupabaseClient();
+
+  const { data, error } = await supabase
+    .from("companions")
+    .select()
+    .eq("author", userId);
+
+  if (error) throw new Error(error.message);
+
+  return data;
 };
