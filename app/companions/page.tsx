@@ -1,17 +1,28 @@
+import { getAllCompanions } from "@/lib/actions/companion.actions";
+import { getSubjectColor } from "@/lib/utils";
 import CompanionCard from "@/components/CompanionCard";
 import SearchInput from "@/components/SearchInput";
 import SubjectFilter from "@/components/SubjectFilter";
-import { getAllCompanions } from "@/lib/actions/companion.actions";
-import { getSubjectColor } from "@/lib/utils";
+import CompanionInfiniteList from "@/components/CompanionInfiniteList";
 
 const CompanionsLibrary = async ({ searchParams }: SearchParams) => {
   const params = await searchParams;
-  const subject = params.subject ? params.subject : "";
-  const topic = params.topic ? params.topic : "";
+  // const subject = params.subject ? params.subject : "";
+  // const topic = params.topic ? params.topic : "";
+
+  const subject = Array.isArray(params.subject)
+    ? params.subject[0]
+    : params.subject ?? "";
+
+  const topic = Array.isArray(params.topic)
+    ? params.topic[0]
+    : params.topic ?? "";
 
   const companions = await getAllCompanions({
     subject,
     topic,
+    page: 1,
+    limit: 12,
   });
 
   return (
@@ -23,7 +34,7 @@ const CompanionsLibrary = async ({ searchParams }: SearchParams) => {
           <SubjectFilter />
         </div>
       </section>
-      <section className="companions-grid">
+      {/* <section className="companions-grid">
         {companions && companions.length > 0 ? (
           companions.map((companion) => (
             <CompanionCard
@@ -35,7 +46,13 @@ const CompanionsLibrary = async ({ searchParams }: SearchParams) => {
         ) : (
           <p>No companions found.</p>
         )}
-      </section>
+      </section> */}
+      <CompanionInfiniteList
+        key={`${subject}-${topic}`}
+        initialCompanions={companions}
+        subject={subject}
+        topic={topic}
+      />
     </main>
   );
 };

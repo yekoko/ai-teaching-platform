@@ -20,7 +20,7 @@ export const createCompanion = async (formData: CreateCompanion) => {
 };
 
 export const getAllCompanions = async ({
-  limit = 10,
+  limit = 12,
   page = 1,
   subject,
   topic,
